@@ -10,8 +10,9 @@ import { RouterLink, RouterView } from 'vue-router'
         <RouterLink to="/about">About</RouterLink>
       </nav>
     </header>
-
-    <RouterView />
+    <section class="content">
+      <RouterView />
+    </section>
   </main>
 </template>
 
@@ -51,5 +52,9 @@ nav a {
 
 nav a:first-of-type {
   border: 0;
+}
+
+.content {
+  padding: 24px;
 }
 </style>

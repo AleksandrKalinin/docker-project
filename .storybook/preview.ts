@@ -8,7 +8,22 @@ const preview: Preview = {
         color: /(background|color)$/i,
         date: /Date$/i
       }
-    }
+    },
+    parameters: {
+      backgrounds: {
+        default: 'blue',
+        values: [
+          {
+            name: 'blue',
+            value: '#318CE7',
+          },
+          {
+            name: 'moonstone',
+            value: '#3AA8C1',
+          },
+        ],
+      },
+    },
   }
 }
 

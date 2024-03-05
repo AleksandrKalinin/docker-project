@@ -18,6 +18,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "axios": "^1.6.7",
     "pinia": "^2.1.7",
     "storybook-addon-vue-slots": "^0.9.29",
     "vue": "^3.4.15",

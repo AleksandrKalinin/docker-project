@@ -11,12 +11,12 @@ export default {
     variant: {
       control: { type: 'radio' },
       options: ['contained', 'outlined'],
-      defaultValue: 'outlined',
+      defaultValue: 'outlined'
     },
     type: {
       control: { type: 'radio' },
       options: ['text', 'number', 'password', 'email'],
-      defaultValue: 'text',
+      defaultValue: 'text'
     },
     label: {
       control: { type: 'text' },
@@ -29,8 +29,8 @@ export default {
     modelValue: {
       control: { type: 'text' },
       defaultValue: ''
-    },
-  },
+    }
+  }
 } as Meta<typeof BaseInput>
 
 interface Mapper {
@@ -39,28 +39,32 @@ interface Mapper {
 
 const iconMapping: Mapper = {
   'Search Input': IconSearch,
-  'Dropdown Input': IconChevron,
-};
+  'Dropdown Input': IconChevron
+}
 
 const Template: StoryFn<typeof BaseInput> = (args, { name }: StoryContext) => {
-  const IconComponent = iconMapping[name]; 
-  return ({
-    components: { BaseInput, IconComponent},
+  const IconComponent = iconMapping[name]
+  return {
+    components: { BaseInput, IconComponent },
     setup() {
       return { args, name }
     },
     template: `<BaseInput v-bind="args"><IconComponent /></BaseInput>`
-  })
+  }
 }
 
 export const ContainedInput = Template.bind({})
-ContainedInput.args = { variant: 'contained', label: "Contained Input", placeholder: "Enter text" }
+ContainedInput.args = { variant: 'contained', label: 'Contained Input', placeholder: 'Enter text' }
 
 export const OutlinedInput = Template.bind({})
-OutlinedInput.args = { variant: 'outlined', label: "Outlined Input", placeholder: "Enter text" }
+OutlinedInput.args = { variant: 'outlined', label: 'Outlined Input', placeholder: 'Enter text' }
 
 export const SearchInput = Template.bind({})
-SearchInput.args = { variant: 'outlined', label: "Input with an icon", placeholder: "Placeholder" }
+SearchInput.args = { variant: 'outlined', label: 'Input with an icon', placeholder: 'Placeholder' }
 
 export const DropdownInput = Template.bind({})
-DropdownInput.args = { variant: 'outlined', label: "Input with an icon", placeholder: "Placeholder" }
+DropdownInput.args = {
+  variant: 'outlined',
+  label: 'Input with an icon',
+  placeholder: 'Placeholder'
+}

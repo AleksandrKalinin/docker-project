@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import Upload from '@/components/Upload.vue'
+import FIleUpload from '@/components/FIleUpload.vue'
 </script>
 
 <template>
   <div class="page">
-    <Upload />
+    <FIleUpload />
+    <!-- <Upload /> -->
     <!-- <BaseForm /> -->
   </div>
 </template>

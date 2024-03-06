@@ -4,80 +4,96 @@
     <input type="submit" value="Upload" />
   </form>
   <button @click="() => console.log('Done')">Alert</button>
-  <div class="preloaders">
-    <div v-for="item in uploadedFiles" :key="item.name" class="progress-bar">
+  <div class="progress-wrapper">
+    <div v-for="item in uploadedFiles" :key="item.fileName" class="progress-bar">
       <span class="progress-name">{{ item.fileName }}</span>
       <div ref="progress" id="progress" :style="{ width: `${item.progress}%` }"></div>
+      <span>{{ `${Math.floor(item.progress)}%` }}</span>
     </div>
   </div>
+  <div id="preloader"></div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import axios from 'axios'
+import axios, { type AxiosProgressEvent } from 'axios'
+
+interface UploadedFile {
+  fileName: string
+  progress: number
+  file: File
+}
 
 const uploadForm = ref(null)
 const uploadInput = ref<HTMLInputElement | null>(null)
-const uploadedFiles = ref([])
+const uploadedFiles = ref<UploadedFile[]>([])
 
-const submitData = (e: SubmitEvent) => {
+const submitData = (e: Event) => {
   console.log('event', e)
   e.preventDefault()
 
-  const fileupload = uploadInput.value as HTMLInputElement
-  const files = fileupload.files as FileList
+  // const fileupload = uploadInput.value as HTMLInputElement
+  // const files = fileupload.files as FileList
 
-  if (fileupload) {
-    const file = files[0]
-    const formData = new FormData()
-    formData.append('file', file)
+  // if (fileupload) {
+  //   const file = files[0]
+  //   const formData = new FormData()
+  //   formData.append('file', file)
 
-    const xhr = new XMLHttpRequest()
-    xhr.open('POST', '/upload', true)
-    xhr.upload.onprogress = (e) => {
-      console.log('progress', e)
-      if (e.lengthComputable) {
-        const percentComplete = (e.loaded / e.total) * 100
-        progressBar.value = percentComplete
-      }
-    }
-    xhr.send(formData)
-  }
+  //   const xhr = new XMLHttpRequest()
+  //   xhr.open('POST', '/upload', true)
+  //   xhr.upload.onprogress = (e) => {
+  //     console.log('progress', e)
+  //     if (e.lengthComputable) {
+  //       const percentComplete = (e.loaded / e.total) * 100
+  //       progressBar.value = percentComplete
+  //     }
+  //   }
+  //   xhr.send(formData)
+  // }
 }
 
 const uploadFiles = async (event: Event) => {
   const target = event.target as HTMLInputElement
-  const files = Array.from(target.files)
+  const files = Array.from(target.files as FileList)
 
   files.forEach((file) => {
     uploadedFiles.value.push({ fileName: file.name, file, progress: 0 })
   })
 
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i]
-    const formData = new FormData()
-    formData.append('file', file)
+  console.log(files.length)
 
-    try {
-      const response = await axios.post('http://localhost:3000/upload', formData, {
-        onUploadProgress: (progressEvent) => {
-          uploadedFiles.value[i].progress = progressEvent.progress * 100
-        }
-      })
+  const test = new Array(files.length).fill(0).map((_, i) => {
+    return (async () => {
+      const file = files[i]
+      const formData = new FormData()
+      formData.append('file', file)
 
-      console.log('Upload completed:', response.data)
-    } catch (error) {
-      console.error('Error uploading files:', error)
-    }
-  }
+      try {
+        const response = await axios.post('http://localhost:3000/upload', formData, {
+          onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+            if (progressEvent.progress) {
+              uploadedFiles.value[i].progress = progressEvent.progress * 100
+            }
+          }
+        })
+
+        console.log('Upload completed:', response.data)
+      } catch (error) {
+        console.error('Error uploading files:', error)
+      }
+    })()
+  })
+
+  await Promise.all(test)
 }
 </script>
 
 <style scoped>
-.preloaders {
+.progress-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 24px;
   padding: 24px 0;
 }
 

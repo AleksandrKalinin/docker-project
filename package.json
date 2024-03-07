@@ -18,6 +18,8 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@vueuse/core": "^10.9.0",
+    "axios": "^1.6.7",
     "pinia": "^2.1.7",
     "storybook-addon-vue-slots": "^0.9.29",
     "vue": "^3.4.15",
@@ -50,6 +52,8 @@
     "prettier": "^3.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "sass": "^1.71.1",
+    "sass-loader": "^14.1.1",
     "start-server-and-test": "^2.0.3",
     "storybook": "^7.6.17",
     "typescript": "~5.3.0",

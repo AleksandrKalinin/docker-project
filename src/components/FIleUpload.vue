@@ -1,6 +1,6 @@
 <template>
   <div class="fileupload">
-    <div class="fileupload__dragarea">
+    <div class="fileupload__dragarea dragarea">
       <input
         accept="application/pdf"
         type="file"
@@ -26,10 +26,10 @@
     <div class="fileupload__progressarea progressarea">
       <p class="progressarea__title">{{ progressStatus }}</p>
       <div
-        :class="['progress-scroll', { 'progress-scroll_visible': isScrollVisible }]"
+        :class="['progressarea-scroller', { 'progressarea-scroller_visible': isScrollVisible }]"
         ref="progressScroller"
       >
-        <div class="progress" ref="progressArea">
+        <div class="progress" ref="progressContainer">
           <div
             v-for="file in uploadedFiles"
             :key="file.fileName"
@@ -85,14 +85,14 @@ const uploadInput = ref<HTMLInputElement | null>(null)
 const uploadedFiles = ref<UploadedFile[]>([])
 
 const progressScroller = ref(null)
-const progressArea = ref(null)
+const progressContainer = ref(null)
 
 const { height: progressScrollerHeight } = useElementSize(progressScroller)
-const { height: progressAreaHeight } = useElementSize(progressArea)
+const { height: progressContainerHeight } = useElementSize(progressContainer)
 
 const isScrollVisible = computed(() => {
   if (progressScroller.value) {
-    return progressAreaHeight.value > progressScrollerHeight.value
+    return progressContainerHeight.value > progressScrollerHeight.value
   } else {
     return false
   }
@@ -113,7 +113,7 @@ const formatFiles = async (event: Event) => {
   uploadFiles(files)
 }
 
-const uploadFiles = async (files) => {
+const uploadFiles = async (files: File[]) => {
   files.forEach((file) => {
     uploadedFiles.value.push({ fileName: file.name, file, progress: 0 })
   })
@@ -141,7 +141,7 @@ const uploadFiles = async (files) => {
   await Promise.all(test)
 }
 
-const deleteFile = (name) => {
+const deleteFile = (name: string) => {
   uploadedFiles.value = uploadedFiles.value.filter((item) => item.fileName !== name)
 }
 
@@ -149,7 +149,7 @@ const dropHandler = (ev: DragEvent): void => {
   ev.preventDefault()
 
   if (ev.dataTransfer?.items) {
-    const files = []
+    const files: File[] = []
     ;[...ev.dataTransfer.items].forEach(async (item) => {
       console.log('item', item)
       if (item.kind === 'file' && item.type === 'application/pdf') {
@@ -168,39 +168,9 @@ const dragOverHandler = (ev: DragEvent): void => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 * {
   font-family: 'Inter', sans-serif;
-}
-
-.button {
-  padding: 4px 16px;
-  font-size: 14px;
-  text-decoration: none;
-  cursor: pointer;
-  transition: 0.1s ease;
-}
-
-.button_outlined {
-  border: 1px solid #5d9aee;
-  color: #5d9aee;
-  background: transparent;
-}
-
-.button_outlined:hover {
-  color: #ffffff;
-  background: #5d9aee;
-}
-
-.button_filled {
-  color: #ffffff;
-  background: #5d9aee;
-  border: 1px solid #5d9aee;
-}
-
-.button_filled:hover {
-  color: #5d9aee;
-  background: transparent;
 }
 
 .fileupload {
@@ -210,130 +180,165 @@ const dragOverHandler = (ev: DragEvent): void => {
   background: #181818;
   padding: 24px;
   max-width: 408px;
-}
 
-.dragarea__input {
-  display: none;
-}
-
-.dragarea__label {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  border: 1px solid #e1e1e1;
-  border-style: dashed;
-  padding: 12px;
-  cursor: pointer;
-}
-
-.dragarea__text {
-  display: flex;
-  align-items: center;
+  &__buttons {
+    display: flex;
   gap: 8px;
-  color: #e1e1e1;
-  font-size: 14px;
+  }
 }
 
-.dragarea__filetypes {
-  color: #e1e1e1;
-  font-size: 12px;
+.dragarea {
+  &__input {
+    display: none;
+  }
+
+  &__label {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    border: 1px solid #e1e1e1;
+    border-style: dashed;
+    padding: 12px;
+    cursor: pointer;
+  }
+
+  &__text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #e1e1e1;
+    font-size: 14px;
+  }
+
+  &__filetypes {
+    color: #e1e1e1;
+    font-size: 12px;
+  }
 }
 
 .progressarea {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
 
-.progressarea__title {
-  color: #5d9aee;
-}
+  &__title {
+    color: #5d9aee;
+  }
 
-.progress-scroll {
-  max-height: 188px;
-  overflow-y: auto;
-}
+  &-scroller {
+    max-height: 188px;
+    overflow-y: auto;
 
-.progress-scroll_visible {
-  padding-right: 10px;
+    &_visible {
+      padding-right: 10px;
+    }
+  }
 }
 
 .progress {
   display: flex;
   flex-direction: column;
   gap: 32px;
+
+  &-item {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-height: 36px;
+
+    &:not(:last-child)::after {
+      position: absolute;
+      content: '';
+      bottom: -16px;
+      left: 0;
+      background: #5e5e5e;
+      height: 1px;
+      width: 100%;
+    }
+
+    &__cancel {
+      display: flex;
+      height: 22.4px;
+      align-items: center;
+    }
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      margin: 0 8px 0 4px;
+      gap: 8px;
+    }
+
+    &__info {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    &__name {
+      font-size: 14px;
+      color: #e1e1e1;
+    }
+
+    &__status {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 14px;
+      color: #e1e1e1;
+    }
+  }
+
+  &-bar {
+    display: flex;
+    position: relative;
+    width: 100%;
+    height: 5px;
+
+    &__bg {
+      width: 100%;
+      height: 5px;
+      background: #aeccf6;
+    }
+
+    &__fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: #5d9aee;
+    }
+  }
 }
 
-.progress-item {
-  position: relative;
-  display: flex;
-  width: 100%;
-  min-height: 36px;
-}
-
-.progress-item:not(:last-child)::after {
-  position: absolute;
-  content: '';
-  bottom: -16px;
-  left: 0;
-  background: #5e5e5e;
-  height: 1px;
-  width: 100%;
-}
-
-.progress-item__cancel {
-  display: flex;
-  height: 22.4px;
-  align-items: center;
-}
-
-.progress-item__content {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  margin: 0 8px 0 4px;
-  gap: 8px;
-}
-
-.progress-item__info {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.progress-item__name {
+.button {
+  padding: 4px 16px;
   font-size: 14px;
-  color: #e1e1e1;
-}
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.1s ease;
 
-.progress-item__status {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  color: #e1e1e1;
-}
+  &_outlined {
+    border: 1px solid #5d9aee;
+    color: #5d9aee;
+    background: transparent;
+    &:hover {
+      color: #ffffff;
+      background: #5d9aee;
+    }
+  }
 
-.progress-bar {
-  display: flex;
-  position: relative;
-  width: 100%;
-  height: 5px;
-}
-
-.progress-bar__bg {
-  width: 100%;
-  height: 5px;
-  background: #aeccf6;
-}
-
-.progress-bar__fill {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  background: #5d9aee;
+  &_filled {
+    color: #ffffff;
+    background: #5d9aee;
+    border: 1px solid #5d9aee;
+    &:hover {
+      color: #5d9aee;
+      background: transparent;
+    }
+  }
 }
 
 .icon {
@@ -341,11 +346,6 @@ const dragOverHandler = (ev: DragEvent): void => {
   min-height: 20px;
   max-width: 20px;
   max-height: 20px;
-}
-
-.fileupload__buttons {
-  display: flex;
-  gap: 8px;
 }
 
 ::-webkit-scrollbar {
@@ -363,6 +363,6 @@ const dragOverHandler = (ev: DragEvent): void => {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color:;
+  background-color: #6b6b6b;
 }
 </style>

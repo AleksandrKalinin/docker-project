@@ -53,31 +53,36 @@ const { width, height } = useElementSize(targetElement)
 const { pixelRatio } = useDevicePixelRatio()
 
 const multiplier = computed(() => {
-  if ((window.matchMedia && (window.matchMedia('only screen and (min-resolution: 124dpi), only screen and (min-resolution: 1.3dppx), only screen and (min-resolution: 48.8dpcm)').matches || window.matchMedia('only screen and (-webkit-min-device-pixel-ratio: 1.3), only screen and (-o-min-device-pixel-ratio: 2.6/2), only screen and (min--moz-device-pixel-ratio: 1.3), only screen and (min-device-pixel-ratio: 1.3)').matches)) || (window.devicePixelRatio && window.devicePixelRatio > 1.3)) {
+  const val = (window.matchMedia && (window.matchMedia('only screen and (min-resolution: 124dpi), only screen and (min-resolution: 1.3dppx), only screen and (min-resolution: 48.8dpcm)').matches || window.matchMedia('only screen and (-webkit-min-device-pixel-ratio: 1.3), only screen and (-o-min-device-pixel-ratio: 2.6/2), only screen and (min--moz-device-pixel-ratio: 1.3), only screen and (min-device-pixel-ratio: 1.3)').matches)) || (window.devicePixelRatio && window.devicePixelRatio > 1.3)
+  console.log(val);  
+  if (val) {
     return 2
   } else return 1
 })
 
-const effectivePPI = computed(() => (96 * pixelRatio.value * multiplier.value));
+const effectivePPI = computed(() => (96 * pixelRatio.value));
 // effectionPPI calculation if element width/height should preserve inital value
 
 // const effectivePPI = computed(() => (96 / (pixelRatio.value * 100)) * 100 * multiplier.value)
 // effectionPPI calculation if element width/height should scale when user zooming in/changing display scale
 
 const widthInCm = computed(() => {
+  console.log("pixelRatio.value", pixelRatio.value)
+  console.log("multiplier", multiplier.value)
+  console.log("actual width", ((width.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2))
   return ((width.value / effectivePPI.value) * 2.54).toFixed(2)
 })
 
 const heightInCm = computed(() => {
-  return ((height.value / effectivePPI.value) * 2.54).toFixed(2)
+  return ((height.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
 })
 
 const widthInInches = computed(() => {
-  return (width.value / effectivePPI.value).toFixed(2)
+  return ((width.value / effectivePPI.value) * multiplier.value).toFixed(2)
 })
 
 const heightInInches = computed(() => {
-  return (height.value / effectivePPI.value).toFixed(2)
+  return ((height.value / effectivePPI.value) * multiplier.value).toFixed(2)
 })
 
 </script>

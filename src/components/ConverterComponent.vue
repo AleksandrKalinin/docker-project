@@ -70,7 +70,7 @@ const widthInCm = computed(() => {
   console.log("pixelRatio.value", pixelRatio.value)
   console.log("multiplier", multiplier.value)
   console.log("actual width", ((width.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2))
-  return ((width.value / effectivePPI.value) * 2.54).toFixed(2)
+  return ((width.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
 })
 
 const heightInCm = computed(() => {

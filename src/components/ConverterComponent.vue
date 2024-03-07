@@ -43,32 +43,41 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref} from 'vue'
+import { computed, ref } from 'vue'
 import { useDevicePixelRatio } from '@vueuse/core'
 import { useElementSize } from '@vueuse/core'
-
-const PPI = computed(() => (96 / (pixelRatio.value * 100)) * 100)
 
 const targetElement = ref(null)
 
 const { width, height } = useElementSize(targetElement)
 const { pixelRatio } = useDevicePixelRatio()
 
+const multiplier = computed(() => {
+  if ((window.matchMedia && (window.matchMedia('only screen and (min-resolution: 124dpi), only screen and (min-resolution: 1.3dppx), only screen and (min-resolution: 48.8dpcm)').matches || window.matchMedia('only screen and (-webkit-min-device-pixel-ratio: 1.3), only screen and (-o-min-device-pixel-ratio: 2.6/2), only screen and (min--moz-device-pixel-ratio: 1.3), only screen and (min-device-pixel-ratio: 1.3)').matches)) || (window.devicePixelRatio && window.devicePixelRatio > 1.3)) {
+    return 2
+  } else return 1
+})
+
+const effectivePPI = computed(() => (96 * pixelRatio.value * multiplier.value));
+// effectionPPI calculation if element width/height should preserve inital value
+
+// const effectivePPI = computed(() => (96 / (pixelRatio.value * 100)) * 100 * multiplier.value)
+// effectionPPI calculation if element width/height should scale when user zooming in/changing display scale
+
 const widthInCm = computed(() => {
-  console.log('PPI value', PPI.value)
-  return ((width.value / PPI.value) * 2.54).toFixed(2)
+  return ((width.value / effectivePPI.value) * 2.54).toFixed(2)
 })
 
 const heightInCm = computed(() => {
-  return ((height.value / PPI.value) * 2.54).toFixed(2)
+  return ((height.value / effectivePPI.value) * 2.54).toFixed(2)
 })
 
 const widthInInches = computed(() => {
-  return (width.value / PPI.value).toFixed(2)
+  return (width.value / effectivePPI.value).toFixed(2)
 })
 
 const heightInInches = computed(() => {
-  return (height.value / PPI.value).toFixed(2)
+  return (height.value / effectivePPI.value).toFixed(2)
 })
 
 </script>
@@ -100,7 +109,7 @@ const heightInInches = computed(() => {
 
   &__wrapper {
     width: auto;
-  height: auto;
+    height: auto;
   }
 }
 

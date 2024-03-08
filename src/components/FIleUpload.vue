@@ -183,7 +183,7 @@ const dragOverHandler = (ev: DragEvent): void => {
 
   &__buttons {
     display: flex;
-  gap: 8px;
+    gap: 8px;
   }
 }
 

@@ -235,7 +235,6 @@ const stopDragging = () => {
 }
 </style> -->
 
-
 <template>
   <div class="main">
     <div class="controls">
@@ -314,26 +313,57 @@ const stopDragging = () => {
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useDevicePixelRatio } from '@vueuse/core'
+import { computed, ref, watchEffect } from 'vue'
+import { useDevicePixelRatio, useWindowSize } from '@vueuse/core'
 import { useElementSize } from '@vueuse/core'
-import useRetinaDisplay from './composables/useRetinaDisplay';
+import useRetinaDisplay from './composables/useRetinaDisplay'
 
 const targetElement = ref<HTMLElement | null>(null)
 
 const { width, height } = useElementSize(targetElement)
 const { pixelRatio } = useDevicePixelRatio()
 const { multiplier } = useRetinaDisplay()
+const {width: windowWidth, height: windowHeight} = useWindowSize()
 
-const effectivePPI = computed(() => 96 * pixelRatio.value)
-// effectionPPI calculation if element width/height should preserve inital value even if it change it's size visually
+const calcScreenPPI = computed(() => {
+  const el = document.createElement('div')
+  el.style.width = '1in'
+  document.body.appendChild(el)
+  console.log("element width", el.offsetWidth)
+  const dpi = el.offsetWidth * pixelRatio.value
+  el.remove()
+  return dpi
+})
 
-// const effectivePPI = computed(() => (96 / (pixelRatio.value * 100)) * 100 * multiplier.value)
+const displayProperties = computed(() => {
+  const screenDPI = calcScreenPPI.value
+  const screenWidth = window.screen.width / pixelRatio.value // Horizontal resolution in pixels
+  const screenHeight = window.screen.height / pixelRatio.value // Vertical resolution in pixels
+  const diagonalInPixels = Math.sqrt(Math.pow(screenWidth, 2) + Math.pow(screenHeight, 2)) // Diagonal resolution in pixels
+  const diagonalInInches = diagonalInPixels / screenDPI // Assuming standard PPI of 96
+
+  return {
+    horizontalResolution: screenWidth,
+    verticalResolution: screenHeight,
+    diagonalInInches: diagonalInInches
+  }  
+})
+
+// const calcDevicePPI = computed(() => {
+//   const { horizontalResolution, verticalResolution, diagonalInInches } = displayProperties.value
+//   const diagonal = Number(diagonalInInches.toFixed(2))
+//   const ppi = Math.sqrt(Math.pow(horizontalResolution, 2) + Math.pow(verticalResolution, 2)) / diagonal 
+//   console.log("computed ppi - calc device ppi", ppi)
+//   return ppi  
+// })
+
+ const effectivePPI = computed(() => calcScreenPPI.value)
 // effectionPPI calculation if element width/height should scale when user zooming in/changing display scale
 
+// const effectivePPI = computed(() => (calcScreenPPI.value / (pixelRatio.value * 100)) * 100)
+// effectionPPI calculation if element width/height should preserve inital value even if it change it's size visually
+
 const widthInCm = computed(() => {
-  console.log("multiplier", multiplier.value)
-  console.log("ppi", effectivePPI.value)
   return ((width.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
 })
 
@@ -393,6 +423,17 @@ const dragging = (event: MouseEvent) => {
 const stopDragging = () => {
   isDragging.value = false
 }
+
+watchEffect(() => {
+  console.log("multiplicator", multiplier.value)
+  console.log('Dynamic Horizontal Resolution:', windowWidth.value)
+  console.log('Dynamic Vertical Resolution:', windowHeight.value)
+  console.log('Horizontal Resolution:', displayProperties.value.horizontalResolution)
+  console.log('Vertical Resolution:', displayProperties.value.verticalResolution)
+  console.log('Diagonal Size (in inches):', Number(displayProperties.value.diagonalInInches.toFixed(2)))
+  console.log('effective PPI', effectivePPI.value)
+})
+
 </script>
 
 <style scoped lang="scss">

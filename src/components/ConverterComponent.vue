@@ -1,30 +1,58 @@
-<template>
+<!-- <template>
   <div class="main">
     <div class="controls">
-      <label class="label">
-        Width in pixels
-        <input type="number" v-model.number="width" />
-      </label>
-      <label class="label">
-        Height in pixels
-        <input type="number" v-model.number="height" />
-      </label>
-      <p>
-        Width in centimeters
-        {{ widthInCm }}
-      </p>
-      <p>
-        Height in centimeters
-        {{ heightInCm }}
-      </p>
-      <p>
-        Width in inches
-        {{ widthInInches }}
-      </p>
-      <p>
-        Height in inches
-        {{ heightInInches }}
-      </p>
+      <div class="controls__block">
+        <label class="label">
+          Width in pixels
+          <input type="number" v-model.number="width" />
+        </label>
+        <label class="label">
+          Height in pixels
+          <input type="number" v-model.number="height" />
+        </label>
+        <p>
+          Width in centimeters
+          {{ widthInCm }}
+        </p>
+        <p>
+          Height in centimeters
+          {{ heightInCm }}
+        </p>
+        <p>
+          Width in inches
+          {{ widthInInches }}
+        </p>
+        <p>
+          Height in inches
+          {{ heightInInches }}
+        </p>
+      </div>
+      <div class="controls__block">
+        <p>
+          Offset left in pixels
+          {{ offsetXInPx }}
+        </p>
+        <p>
+          Offset top in pixels
+          {{ offsetYInPx }}
+        </p>
+        <p>
+          Offset left in centimeters
+          {{ offsetXInCm }}
+        </p>
+        <p>
+          Offset top in centimeters
+          {{ offsetYInCm }}
+        </p>
+        <p>
+          Offset left in inches
+          {{ offsetXInInches }}
+        </p>
+        <p>
+          Offset top in inches
+          {{ offsetYInInches }}
+        </p>
+      </div>
     </div>
     <div class="content">
       <div class="content__wrapper">
@@ -32,11 +60,20 @@
           class="element"
           ref="targetElement"
           draggable
+          @mousedown="startDragging"
+          @mousemove="dragging"
+          @mouseup="stopDragging"
           :style="[
             { width: width === 0 ? '400px' : `${width}px` },
-            { height: height === 0 ? '400px' : `${height}px` }
+            { height: height === 0 ? '400px' : `${height}px` },
+            { left: offsetXInPx === 0 ? '0' : `${offsetXInPx}px` },
+            { top: offsetYInPx === 0 ? '0' : `${offsetYInPx}px` }
           ]"
-        ></div>
+        >
+        <div class="element__wrap">
+          <span class="element__resize"></span>
+        </div>
+      </div>
       </div>
     </div>
   </div>
@@ -47,29 +84,33 @@ import { computed, ref } from 'vue'
 import { useDevicePixelRatio } from '@vueuse/core'
 import { useElementSize } from '@vueuse/core'
 
-const targetElement = ref(null)
+const targetElement = ref<HTMLElement | null>(null)
 
 const { width, height } = useElementSize(targetElement)
 const { pixelRatio } = useDevicePixelRatio()
 
 const multiplier = computed(() => {
-  const val = (window.matchMedia && (window.matchMedia('only screen and (min-resolution: 124dpi), only screen and (min-resolution: 1.3dppx), only screen and (min-resolution: 48.8dpcm)').matches || window.matchMedia('only screen and (-webkit-min-device-pixel-ratio: 1.3), only screen and (-o-min-device-pixel-ratio: 2.6/2), only screen and (min--moz-device-pixel-ratio: 1.3), only screen and (min-device-pixel-ratio: 1.3)').matches)) || (window.devicePixelRatio && window.devicePixelRatio > 1.3)
-  console.log(val);  
+  const val =
+    (window.matchMedia &&
+      (window.matchMedia(
+        'only screen and (min-resolution: 124dpi), only screen and (min-resolution: 1.3dppx), only screen and (min-resolution: 48.8dpcm)'
+      ).matches ||
+        window.matchMedia(
+          'only screen and (-webkit-min-device-pixel-ratio: 1.3), only screen and (-o-min-device-pixel-ratio: 2.6/2), only screen and (min--moz-device-pixel-ratio: 1.3), only screen and (min-device-pixel-ratio: 1.3)'
+        ).matches)) ||
+    (window.devicePixelRatio && window.devicePixelRatio > 1.3)
   if (val) {
     return 2
   } else return 1
 })
 
-const effectivePPI = computed(() => (96 * pixelRatio.value));
+const effectivePPI = computed(() => 96 * pixelRatio.value)
 // effectionPPI calculation if element width/height should preserve inital value
 
 // const effectivePPI = computed(() => (96 / (pixelRatio.value * 100)) * 100 * multiplier.value)
 // effectionPPI calculation if element width/height should scale when user zooming in/changing display scale
 
 const widthInCm = computed(() => {
-  console.log("pixelRatio.value", pixelRatio.value)
-  console.log("multiplier", multiplier.value)
-  console.log("actual width", ((width.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2))
   return ((width.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
 })
 
@@ -85,6 +126,48 @@ const heightInInches = computed(() => {
   return ((height.value / effectivePPI.value) * multiplier.value).toFixed(2)
 })
 
+const isDragging = ref(false)
+
+const offsetX = ref(0)
+const offsetY = ref(0)
+
+const offsetXInPx = ref(40)
+const offsetYInPx = ref(40)
+
+const offsetXInCm = computed(() => {
+  return ((offsetXInPx.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
+})
+
+const offsetYInCm = computed(() => {
+  return ((offsetYInPx.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
+})
+
+const offsetXInInches = computed(() => {
+  return ((offsetXInPx.value / effectivePPI.value) * multiplier.value).toFixed(2)
+})
+
+const offsetYInInches = computed(() => {
+  return ((offsetYInPx.value / effectivePPI.value) * multiplier.value).toFixed(2)
+})
+
+const startDragging = (event: MouseEvent) => {
+  event.preventDefault()
+  if (targetElement.value) {
+    offsetX.value = event.clientX - targetElement.value.offsetLeft
+    offsetY.value = event.clientY - targetElement.value.offsetTop
+  }
+
+  isDragging.value = true
+}
+const dragging = (event: MouseEvent) => {
+  if (isDragging.value) {
+    offsetXInPx.value = event.clientX - offsetX.value
+    offsetYInPx.value = event.clientY - offsetY.value
+  }
+}
+const stopDragging = () => {
+  isDragging.value = false
+}
 </script>
 
 <style scoped lang="scss">
@@ -98,29 +181,256 @@ const heightInInches = computed(() => {
   width: 300px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 24px;
   margin-right: 30px;
+
+  .controls__block {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 }
 
 .content {
   width: calc(100% - 300px);
   height: 100%;
   border: 1px solid #e1e1e1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   overflow-x: auto;
   overflow-y: auto;
 
   &__wrapper {
     width: auto;
     height: auto;
+    position: relative;
   }
 }
 
 .element {
-  resize: both;
   overflow: auto;
   background: cornflowerblue;
+  position: absolute;
+
+  &__wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  &__resize {
+    display: none;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: red;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+      .element__resize {
+        display: block;
+      }
+    }
+}
+</style> -->
+
+
+<template>
+  <div class="main">
+    <div class="controls">
+      <div class="controls__block">
+        <label class="label">
+          Width in pixels
+          <input type="number" v-model.number="width" />
+        </label>
+        <label class="label">
+          Height in pixels
+          <input type="number" v-model.number="height" />
+        </label>
+        <p>
+          Width in centimeters
+          {{ widthInCm }}
+        </p>
+        <p>
+          Height in centimeters
+          {{ heightInCm }}
+        </p>
+        <p>
+          Width in inches
+          {{ widthInInches }}
+        </p>
+        <p>
+          Height in inches
+          {{ heightInInches }}
+        </p>
+      </div>
+      <div class="controls__block">
+        <p>
+          Offset left in pixels
+          {{ offsetXInPx }}
+        </p>
+        <p>
+          Offset top in pixels
+          {{ offsetYInPx }}
+        </p>
+        <p>
+          Offset left in centimeters
+          {{ offsetXInCm }}
+        </p>
+        <p>
+          Offset top in centimeters
+          {{ offsetYInCm }}
+        </p>
+        <p>
+          Offset left in inches
+          {{ offsetXInInches }}
+        </p>
+        <p>
+          Offset top in inches
+          {{ offsetYInInches }}
+        </p>
+      </div>
+    </div>
+    <div class="content">
+      <div class="content__wrapper">
+        <div
+          class="element"
+          ref="targetElement"
+          draggable
+          @mousedown="startDragging"
+          @mousemove="dragging"
+          @mouseup="stopDragging"
+          :style="[
+            { width: width === 0 ? '400px' : `${width}px` },
+            { height: height === 0 ? '400px' : `${height}px` },
+            { left: offsetXInPx === 0 ? '0' : `${offsetXInPx}px` },
+            { top: offsetYInPx === 0 ? '0' : `${offsetYInPx}px` }
+          ]"
+        ></div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { useDevicePixelRatio } from '@vueuse/core'
+import { useElementSize } from '@vueuse/core'
+import useRetinaDisplay from './composables/useRetinaDisplay';
+
+const targetElement = ref<HTMLElement | null>(null)
+
+const { width, height } = useElementSize(targetElement)
+const { pixelRatio } = useDevicePixelRatio()
+const { multiplier } = useRetinaDisplay()
+
+const effectivePPI = computed(() => 96 * pixelRatio.value)
+// effectionPPI calculation if element width/height should preserve inital value even if it change it's size visually
+
+// const effectivePPI = computed(() => (96 / (pixelRatio.value * 100)) * 100 * multiplier.value)
+// effectionPPI calculation if element width/height should scale when user zooming in/changing display scale
+
+const widthInCm = computed(() => {
+  return ((width.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
+})
+
+const heightInCm = computed(() => {
+  return ((height.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
+})
+
+const widthInInches = computed(() => {
+  return ((width.value / effectivePPI.value) * multiplier.value).toFixed(2)
+})
+
+const heightInInches = computed(() => {
+  return ((height.value / effectivePPI.value) * multiplier.value).toFixed(2)
+})
+
+const isDragging = ref(false)
+
+const offsetX = ref(0)
+const offsetY = ref(0)
+
+const offsetXInPx = ref(40)
+const offsetYInPx = ref(40)
+
+const offsetXInCm = computed(() => {
+  return ((offsetXInPx.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
+})
+
+const offsetYInCm = computed(() => {
+  return ((offsetYInPx.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
+})
+
+const offsetXInInches = computed(() => {
+  return ((offsetXInPx.value / effectivePPI.value) * multiplier.value).toFixed(2)
+})
+
+const offsetYInInches = computed(() => {
+  return ((offsetYInPx.value / effectivePPI.value) * multiplier.value).toFixed(2)
+})
+
+const startDragging = (event: MouseEvent) => {
+  event.preventDefault()
+  if (targetElement.value) {
+    offsetX.value = event.clientX - targetElement.value.offsetLeft
+    offsetY.value = event.clientY - targetElement.value.offsetTop
+  }
+
+  isDragging.value = true
+}
+
+const dragging = (event: MouseEvent) => {
+  if (isDragging.value) {
+    offsetXInPx.value = event.clientX - offsetX.value
+    offsetYInPx.value = event.clientY - offsetY.value
+  }
+}
+
+const stopDragging = () => {
+  isDragging.value = false
+}
+</script>
+
+<style scoped lang="scss">
+.main {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+}
+
+.controls {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-right: 30px;
+
+  &__block {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.content {
+  width: calc(100% - 300px);
+  height: 100%;
+  border: 1px solid #e1e1e1;
+  overflow-x: auto;
+  overflow-y: auto;
+
+  &__wrapper {
+    width: auto;
+    height: auto;
+    position: relative;
+  }
+}
+
+.element {
+  overflow: auto;
+  background: cornflowerblue;
+  position: absolute;
 }
 </style>

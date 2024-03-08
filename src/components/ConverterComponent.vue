@@ -360,7 +360,7 @@ const displayProperties = computed(() => {
  const effectivePPI = computed(() => calcScreenPPI.value)
 // effectionPPI calculation if element width/height should scale when user zooming in/changing display scale
 
-// const effectivePPI = computed(() => (calcScreenPPI.value / (pixelRatio.value * 100)) * 100 * multiplier.value)
+// const effectivePPI = computed(() => (calcScreenPPI.value / (pixelRatio.value * 100)) * 100)
 // effectionPPI calculation if element width/height should preserve inital value even if it change it's size visually
 
 const widthInCm = computed(() => {

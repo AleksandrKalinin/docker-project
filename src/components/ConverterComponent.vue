@@ -332,6 +332,8 @@ const effectivePPI = computed(() => 96 * pixelRatio.value)
 // effectionPPI calculation if element width/height should scale when user zooming in/changing display scale
 
 const widthInCm = computed(() => {
+  console.log("multiplier", multiplier.value)
+  console.log("ppi", effectivePPI.value)
   return ((width.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
 })
 

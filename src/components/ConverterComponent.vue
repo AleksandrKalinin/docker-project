@@ -248,6 +248,14 @@ const stopDragging = () => {
           <input type="number" v-model.number="height" />
         </label>
         <p>
+          Width in centimeters with multiplier
+          {{ widthInCmMultiplier }}
+        </p>
+        <p>
+          Height in centimeters width multiplier
+          {{ heightInCmMultiplier }}
+        </p>
+        <p>
           Width in centimeters
           {{ widthInCm }}
         </p>
@@ -349,8 +357,8 @@ const displayProperties = computed(() => {
   // const screenWidth = window.screen.width / pixelRatio.value * multiplier.value // Horizontal resolution in pixels
   // const screenHeight = window.screen.height / pixelRatio.value * multiplier.value // Vertical resolution in pixels
 
-  const screenWidth = window.screen.width * multiplier.value
-  const screenHeight = window.screen.height * multiplier.value
+  const screenWidth = window.screen.width
+  const screenHeight = window.screen.height
   const diagonalInPixels = Math.sqrt(Math.pow(screenWidth, 2) + Math.pow(screenHeight, 2)) // Diagonal resolution in pixels
   const diagonalInInches = diagonalInPixels / screenDPI // Assuming standard PPI of 96
 
@@ -406,22 +414,50 @@ const effectivePPI = computed(() => (calcScreenPPI.value / pixelRatio.value))
 //   return ((height.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
 // })
 
-const widthInCm = computed(() => {
+// const widthInCm = computed(() => {
+//   console.log("CALC SCREEN PPI", calcScreenPPI.value);
+//   console.log("PIXEL RATIO", pixelRatio.value);
+//   return ((width.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
+// })
+
+// const heightInCm = computed(() => {
+//   return ((height.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
+// })
+
+// const widthInInches = computed(() => {
+//   return ((width.value / effectivePPI.value) * multiplier.value).toFixed(2)
+// })
+
+// const heightInInches = computed(() => {
+//   return ((height.value / effectivePPI.value) * multiplier.value).toFixed(2)
+// })
+
+const widthInCmMultiplier = computed(() => {
   console.log("CALC SCREEN PPI", calcScreenPPI.value);
   console.log("PIXEL RATIO", pixelRatio.value);
   return ((width.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
 })
 
-const heightInCm = computed(() => {
+const heightInCmMultiplier = computed(() => {
   return ((height.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
 })
 
+const widthInCm = computed(() => {
+  console.log("CALC SCREEN PPI", calcScreenPPI.value);
+  console.log("PIXEL RATIO", pixelRatio.value);
+  return ((width.value / effectivePPI.value) * 2.54).toFixed(2)
+})
+
+const heightInCm = computed(() => {
+  return ((height.value / effectivePPI.value) * 2.54).toFixed(2)
+})
+
 const widthInInches = computed(() => {
-  return ((width.value / effectivePPI.value) * multiplier.value).toFixed(2)
+  return ((width.value / effectivePPI.value)).toFixed(2)
 })
 
 const heightInInches = computed(() => {
-  return ((height.value / effectivePPI.value) * multiplier.value).toFixed(2)
+  return ((height.value / effectivePPI.value)).toFixed(2)
 })
 
 const isDragging = ref(false)

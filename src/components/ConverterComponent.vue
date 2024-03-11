@@ -328,10 +328,19 @@ const calcScreenPPI = computed(() => {
   const el = document.createElement('div')
   el.style.width = '1in'
   document.body.appendChild(el)
-  const dpi = el.offsetWidth * pixelRatio.value
+  const dpi = el.offsetWidth
   el.remove()
   return dpi
 })
+
+// const calcScreenPPI = computed(() => {
+//   const el = document.createElement('div')
+//   el.style.width = '1in'
+//   document.body.appendChild(el)
+//   const dpi = el.offsetWidth * pixelRatio.value
+//   el.remove()
+//   return dpi
+// })
 
 const displayProperties = computed(() => {
   const screenDPI = calcScreenPPI.value
@@ -378,14 +387,27 @@ const displayProperties = computed(() => {
 //   return ppi  
 // })
 
-const effectivePPI = computed(() => calcScreenPPI.value)
+// const effectivePPI = computed(() => calcScreenPPI.value)
 
 // effectionPPI calculation if element width/height should scale when user zooming in/changing display scale
 
 // const effectivePPI = computed(() => (calcScreenPPI.value / (pixelRatio.value * 100)) * 100)
 // effectionPPI calculation if element width/height should preserve inital value even if it change it's size visually
 
+const effectivePPI = computed(() => (calcScreenPPI.value / pixelRatio.value))
+// effectionPPI calculation if element should grow bigger
+
+// const widthInCm = computed(() => {
+//   return ((width.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
+// })
+
+// const heightInCm = computed(() => {
+//   return ((height.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
+// })
+
 const widthInCm = computed(() => {
+  console.log("CALC SCREEN PPI", calcScreenPPI.value);
+  console.log("PIXEL RATIO", pixelRatio.value);
   return ((width.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
 })
 

@@ -314,7 +314,7 @@ const stopDragging = () => {
 
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue'
-import { useDevicePixelRatio, useWindowSize } from '@vueuse/core'
+import { useDevicePixelRatio } from '@vueuse/core'
 import { useElementSize } from '@vueuse/core'
 import useRetinaDisplay from './composables/useRetinaDisplay'
 
@@ -323,13 +323,11 @@ const targetElement = ref<HTMLElement | null>(null)
 const { width, height } = useElementSize(targetElement)
 const { pixelRatio } = useDevicePixelRatio()
 const { multiplier } = useRetinaDisplay()
-const {width: windowWidth, height: windowHeight} = useWindowSize()
 
 const calcScreenPPI = computed(() => {
   const el = document.createElement('div')
   el.style.width = '1in'
   document.body.appendChild(el)
-  console.log("element width", el.offsetWidth)
   const dpi = el.offsetWidth * pixelRatio.value
   el.remove()
   return dpi
@@ -337,8 +335,12 @@ const calcScreenPPI = computed(() => {
 
 const displayProperties = computed(() => {
   const screenDPI = calcScreenPPI.value
-  const screenWidth = window.screen.width / pixelRatio.value // Horizontal resolution in pixels
-  const screenHeight = window.screen.height / pixelRatio.value // Vertical resolution in pixels
+  console.log("window screen width", window.screen.width)
+  // const screenWidth = window.screen.width / pixelRatio.value * multiplier.value // Horizontal resolution in pixels
+  // const screenHeight = window.screen.height / pixelRatio.value * multiplier.value // Vertical resolution in pixels
+
+  const screenWidth = window.screen.width * multiplier.value
+  const screenHeight = window.screen.height * multiplier.value
   const diagonalInPixels = Math.sqrt(Math.pow(screenWidth, 2) + Math.pow(screenHeight, 2)) // Diagonal resolution in pixels
   const diagonalInInches = diagonalInPixels / screenDPI // Assuming standard PPI of 96
 
@@ -349,6 +351,25 @@ const displayProperties = computed(() => {
   }  
 })
 
+// 2,286,144
+// 964,324
+// 3,250,468
+// 1802.9054329054533080967927071109
+
+// 3,686,400
+// 1,166,400
+// 4,852,800
+
+// 1507984
+// 477,481
+// 1985465
+// 11.75
+
+// 2,359,296
+// 746,496
+// 3105792
+// 1,762.3257360658386526552050737959
+
 // const calcDevicePPI = computed(() => {
 //   const { horizontalResolution, verticalResolution, diagonalInInches } = displayProperties.value
 //   const diagonal = Number(diagonalInInches.toFixed(2))
@@ -357,7 +378,8 @@ const displayProperties = computed(() => {
 //   return ppi  
 // })
 
- const effectivePPI = computed(() => calcScreenPPI.value)
+const effectivePPI = computed(() => calcScreenPPI.value)
+
 // effectionPPI calculation if element width/height should scale when user zooming in/changing display scale
 
 // const effectivePPI = computed(() => (calcScreenPPI.value / (pixelRatio.value * 100)) * 100)
@@ -426,8 +448,7 @@ const stopDragging = () => {
 
 watchEffect(() => {
   console.log("multiplicator", multiplier.value)
-  console.log('Dynamic Horizontal Resolution:', windowWidth.value)
-  console.log('Dynamic Vertical Resolution:', windowHeight.value)
+  console.log("screen DPI", calcScreenPPI.value)
   console.log('Horizontal Resolution:', displayProperties.value.horizontalResolution)
   console.log('Vertical Resolution:', displayProperties.value.verticalResolution)
   console.log('Diagonal Size (in inches):', Number(displayProperties.value.diagonalInInches.toFixed(2)))

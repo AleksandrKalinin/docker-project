@@ -343,6 +343,7 @@ const calcScreenPPI = computed(() => {
 // })
 
 const displayProperties = computed(() => {
+  console.log("USER AGENT", navigator.userAgent)
   const screenDPI = calcScreenPPI.value
   console.log("window screen width", window.screen.width)
   // const screenWidth = window.screen.width / pixelRatio.value * multiplier.value // Horizontal resolution in pixels

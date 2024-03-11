@@ -248,11 +248,19 @@ const stopDragging = () => {
           <input type="number" v-model.number="height" />
         </label>
         <p>
-          Width in centimeters with multiplier
+          Width in centimeters divide by multiplier
           {{ widthInCmMultiplier }}
         </p>
         <p>
-          Height in centimeters width multiplier
+          Height in centimeters divide by multiplier
+          {{ heightInCmMultiplier }}
+        </p>
+        <p>
+          Width in centimeters multiply by multiplier
+          {{ widthInCmMultiplier }}
+        </p>
+        <p>
+          Height in centimeters multiply by multiplier
           {{ heightInCmMultiplier }}
         </p>
         <p>
@@ -440,6 +448,14 @@ const widthInCmMultiplier = computed(() => {
 
 const heightInCmMultiplier = computed(() => {
   return ((height.value / effectivePPI.value) * multiplier.value * 2.54).toFixed(2)
+})
+
+const widthInCmDivideMultiplier = computed(() => {
+  return ((width.value / effectivePPI.value / multiplier.value) * 2.54).toFixed(2)
+})
+
+const heightInCmDivideMultiplier = computed(() => {
+  return ((height.value / effectivePPI.value / multiplier.value) * 2.54).toFixed(2)
 })
 
 const widthInCm = computed(() => {
